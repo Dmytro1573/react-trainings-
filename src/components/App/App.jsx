@@ -1,57 +1,40 @@
-// import Reader from "../Reader/Reader";
-// import articles from "../../articles.json";
+// import UserForm from "../UserForm/UserForm";
 
-import Timer from "../Timer/Timer";
+// import LangSwitcher from "../LangSwitcher/LangSchwitcher";
 
-import ClickTracker from "../ClickTracker/ClickTracker";
-
-// const ClickCounter = ({ clicks, onClick }) => {
-//   return <button onClick={onClick}>Click: {clicks}</button>;
-// };
+// import { useState } from "react";
+import OrderForm from "../OrderForm/OrderForm";
+// import TextInput from "../TextInput/TextInput";
 
 export default function App() {
-  // const [clicks, setClicks] = useState(0);
-  // const [values, setValues] = useState({
-  //   a: 1,
-  //   b: 2,
-  //   c: 3,
-  // });
-  // const handleClicks = () => {
-  //   setClicks(clicks + 1);
+  // const addNewUser = (newUser) => {
+  //   console.log(newUser);
   // };
-  // const handelReset = () => {
-  //   setClicks(0);
+
+  // const [inputValue, setInputValue] = useState("qwe");
+
+  // const handleChangeInputValue = (newValue) => {
+  //   setInputValue(newValue);
   // };
-  // const handleChangeValues = () => {
-  //   setValues({
-  //     ...values,
-  //     b: 5,
-  //   });
+
+  // const [selectLang, setSelectLang] = useState("en");
+
+  // const handleSelectLang = (newLang) => {
+  //   setSelectLang(newLang);
   // };
-  // return (
-  //   <>
-  //     <div>
-  //       <h1>State in React</h1>
-  //       {/* <button onClick={handleChangeValues}>Change values</button>
-  //       <hr />
-  //       <ClickCounter clicks={clicks} onClick={handleClicks} />
-  //       <ClickCounter clicks={clicks} onClick={handleClicks} />
-  //       <ClickCounter clicks={clicks} onClick={handleClicks} />
-  //       <ClickCounter clicks={clicks} onClick={handleClicks} />
-  //       <ClickCounter clicks={clicks} onClick={handleClicks} /> */}
-  //       {/* <button onClick={handelReset}>Reset</button> */}
-  //       <Reader articles={articles} />
-  //     </div>
-  //   </>
-  // );
+
+  const handleSelectTShirt = (newTShirt) => {
+    console.log(newTShirt);
+  };
 
   return (
     <>
       <div>
-        <ClickTracker />;
-      </div>
-      <div>
-        <Timer />
+        {/* <UserForm onAdd={addNewUser} /> */}
+        {/* <TextInput value={inputValue} onChange={handleChangeInputValue} /> */}
+        {/* <LangSwitcher value={selectLang} onSelect={handleSelectLang} /> */}
+        {/* <p>Current lang: {selectLang}</p> */}
+        <OrderForm onSelect={handleSelectTShirt} />
       </div>
     </>
   );
