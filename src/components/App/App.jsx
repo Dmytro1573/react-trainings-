@@ -1,40 +1,55 @@
-// import UserForm from "../UserForm/UserForm";
+import ContactForm from "../ContactForm/ContactForm";
+import SearchBox from "../SearchBox/SearchBox";
+import ContactList from "../ContactList/ContactList";
+import contacts from "../contacts.json";
+import { useState, useEffect } from "react";
+import { nanoid } from "nanoid";
 
-// import LangSwitcher from "../LangSwitcher/LangSchwitcher";
+const localContacts = () => {
+  const savedContacts = localStorage.getItem("contacts");
 
-// import { useState } from "react";
-import OrderForm from "../OrderForm/OrderForm";
-// import TextInput from "../TextInput/TextInput";
+  if (savedContacts !== null) {
+    return JSON.parse(savedContacts);
+  }
+
+  return contacts;
+};
 
 export default function App() {
-  // const addNewUser = (newUser) => {
-  //   console.log(newUser);
-  // };
+  const [contactsBook, setContactsBook] = useState(localContacts);
+  const [filter, setFilter] = useState("");
 
-  // const [inputValue, setInputValue] = useState("qwe");
-
-  // const handleChangeInputValue = (newValue) => {
-  //   setInputValue(newValue);
-  // };
-
-  // const [selectLang, setSelectLang] = useState("en");
-
-  // const handleSelectLang = (newLang) => {
-  //   setSelectLang(newLang);
-  // };
-
-  const handleSelectTShirt = (newTShirt) => {
-    console.log(newTShirt);
+  const handleFormSubmit = (newContact) => {
+    setContactsBook((prevContacts) => {
+      const contactWithId = { ...newContact, id: nanoid() };
+      return [...prevContacts, contactWithId];
+    });
   };
+
+  const filteredContacts = contactsBook.filter(
+    (contact) =>
+      contact.name && contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  const handleDeleteContact = (contactId) => {
+    setContactsBook((prevContacts) => {
+      return prevContacts.filter((contact) => contact.id !== contactId);
+    });
+  };
+
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contactsBook));
+  });
 
   return (
     <>
       <div>
-        {/* <UserForm onAdd={addNewUser} /> */}
-        {/* <TextInput value={inputValue} onChange={handleChangeInputValue} /> */}
-        {/* <LangSwitcher value={selectLang} onSelect={handleSelectLang} /> */}
-        {/* <p>Current lang: {selectLang}</p> */}
-        <OrderForm onSelect={handleSelectTShirt} />
+        <h1>Phonebook</h1>
+        <ContactForm onAdd={handleFormSubmit} />
+        <SearchBox value={filter} onFilter={setFilter} />
+        <ContactList
+          contacts={filteredContacts}
+          onDelete={handleDeleteContact}
+        />
       </div>
     </>
   );
