@@ -1,64 +1,60 @@
 import { useEffect, useState } from "react";
-import Description from "../Description/Description";
-import Feedback from "../Feedback/Feedback";
-import Options from "../Options/Options";
-import Notification from "../Notification/Notification";
-
-const getFeedback = () => {
-  const savedFeedback = localStorage.getItem("feedback");
-  return savedFeedback !== null
-    ? JSON.parse(savedFeedback)
-    : {
-        good: 0,
-        neutral: 0,
-        bad: 0,
-      };
-};
+import css from "./App.module.css";
+import { getArticles } from "../../articles-api";
+import ArticleList from "../ArticleList/ArticleList";
+import SearchForm from "../SearchForm/SearchForm";
 
 export default function App() {
-  const [feedback, setFeedback] = useState(getFeedback);
-
-  const updateFeedback = (feedbackType) => {
-    setFeedback((prevFeedback) => {
-      return {
-        ...prevFeedback,
-        [feedbackType]: prevFeedback[feedbackType] + 1,
-      };
-    });
-  };
-
-  const resetFeedback = () => {
-    setFeedback({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
-  };
+  const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    localStorage.setItem("feedback", JSON.stringify(feedback));
-  });
+    if (query.trim() === "") {
+      return;
+    }
 
-  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
-  const positiveFeedback = Math.round((feedback.good / totalFeedback) * 100);
+    async function getItems() {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+        const data = await getArticles(query, page);
+        setArticles((prevState) => [...prevState, ...data]);
+      } catch (error) {
+        setIsError(true);
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    getItems();
+  }, [query, page]);
+
+  const handleSearch = (topic) => {
+    setQuery(topic);
+    setPage(1);
+    setArticles([]);
+  };
+
+  const handleLoadMore = () => {
+    setPage(page + 1);
+  };
 
   return (
     <>
-      <div>
-        <Description />
-        <Options
-          onUpdate={updateFeedback}
-          totalFeedback={totalFeedback}
-          onReset={resetFeedback}
-        />
-        {totalFeedback > 0 ? (
-          <Feedback
-            feedback={feedback}
-            totalFeedback={totalFeedback}
-            positive={positiveFeedback}
-          />
-        ) : (
-          <Notification />
+      <div className={css.container}>
+        <h1>HTTP requests in React</h1>
+        <SearchForm onSearch={handleSearch} />
+        {isLoading && <p>Loading please wait......</p>}
+        {isError && <p>Something went wrong. Please try again</p>}
+        {articles.length > 0 && <ArticleList articles={articles} />}
+        {articles.length > 0 && (
+          <button type="button" onClick={handleLoadMore} disabled={isLoading}>
+            Load more
+          </button>
         )}
       </div>
     </>
