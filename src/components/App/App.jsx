@@ -1,65 +1,84 @@
+import toast, { Toaster } from "react-hot-toast";
+import SearchBar from "../SearchBar/SearchBar";
+import { fetchPhotos } from "../photos-api";
 import { useEffect, useState } from "react";
-import Description from "../Description/Description";
-import Feedback from "../Feedback/Feedback";
-import Options from "../Options/Options";
-import Notification from "../Notification/Notification";
-
-const getFeedback = () => {
-  const savedFeedback = localStorage.getItem("feedback");
-  return savedFeedback !== null
-    ? JSON.parse(savedFeedback)
-    : {
-        good: 0,
-        neutral: 0,
-        bad: 0,
-      };
-};
+import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import ImageGallery from "../ImageGallery/ImageGallery";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
+import ImageModal from "../ImageMogal/ImageMogal";
 
 export default function App() {
-  const [feedback, setFeedback] = useState(getFeedback);
-
-  const updateFeedback = (feedbackType) => {
-    setFeedback((prevFeedback) => {
-      return {
-        ...prevFeedback,
-        [feedbackType]: prevFeedback[feedbackType] + 1,
-      };
-    });
-  };
-
-  const resetFeedback = () => {
-    setFeedback({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
-  };
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [photos, setPhotos] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [imgUrl, setImgUrl] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("feedback", JSON.stringify(feedback));
-  });
+    if (query.trim() === "") {
+      return;
+    }
 
-  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
-  const positiveFeedback = Math.round((feedback.good / totalFeedback) * 100);
+    async function getAllPhotos() {
+      try {
+        setIsLoading(true);
+        setIsError(false);
+        const data = await fetchPhotos(query, page);
+        setPhotos((prevPhotos) => [...prevPhotos, ...data]);
+      } catch (error) {
+        setIsError(true);
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    getAllPhotos();
+  }, [query, page]);
+
+  const handleSubmitForm = (topic) => {
+    if (topic.trim() === "") {
+      toast.error("This field can not be empty");
+      return;
+    }
+
+    setPhotos([]);
+    setIsError(false);
+    setQuery(topic);
+  };
+
+  const handleLoadMore = () => {
+    setPage(page + 1);
+  };
+
+  const handleImgUrl = (imgUrl) => {
+    setOpenModal(true);
+    setImgUrl(imgUrl);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
 
   return (
     <>
       <div>
-        <Description />
-        <Options
-          onUpdate={updateFeedback}
-          totalFeedback={totalFeedback}
-          onReset={resetFeedback}
-        />
-        {totalFeedback > 0 ? (
-          <Feedback
-            feedback={feedback}
-            totalFeedback={totalFeedback}
-            positive={positiveFeedback}
-          />
-        ) : (
-          <Notification />
+        <SearchBar onSubmit={handleSubmitForm} />
+        {isLoading && <Loader />}
+        {isError && <ErrorMessage />}
+        <ImageGallery photos={photos} onGetUrl={handleImgUrl} />
+        {photos.length > 0 && (
+          <LoadMoreBtn onLoadMore={handleLoadMore} isLoading={isLoading} />
         )}
+        <ImageModal
+          isOpen={openModal}
+          isClose={handleCloseModal}
+          imgUrl={imgUrl}
+        />
+        <Toaster position="top-right" />
       </div>
     </>
   );
